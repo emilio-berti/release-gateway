@@ -166,6 +166,43 @@ stopImplicitCluster()
 write_csv(backbone, "data/final/backbone.csv")
 ```
 
+For the names that are not found in GBIF (_NA_), you need to reassign them to the default raw value. I prefer to do this on the fly, e.g.:
+
+```r
+backbone <- read_csv("data/final/backbone.csv")
+
+n.harmonized <- backbone %>% pull(GBIF) %>% unique() %>% length()
+n.raw <- backbone %>% pull(Species) %>% unique() %>% length()
+
+backbone <- backbone %>% mutate(GBIF = modify2(Species, GBIF, \(x, y) return (ifelse(is.na(y), x, y))))
+n.total <- backbone %>% pull(GBIF) %>% unique() %>% length()
+
+n.harmonized / n.raw # = 0.887
+n.total / n.raw # = 0.966
+
+length(setdiff(backbone$GBIF, backbone$Species)) # = 715
+length(setdiff(backbone$Species, backbone$GBIF)) # = 880
+
+backbone %>% filter(Species != GBIF)
+```
+
+```
+# A tibble: 903 × 4
+   Species                 GBIF                   Class        Order      
+   <chr>                   <chr>                  <chr>        <chr>      
+ 1 Stilicus rufipes        Rugilus rufipes        Insecta      Coleoptera 
+ 2 Trogophloeus corticinus Carpelimus corticinus  Insecta      Coleoptera 
+ 3 Aphtona lutescens       Aphthona lutescens     Insecta      Coleoptera 
+ 4 Gabrius fermoralis      Gabrius                Insecta      Coleoptera 
+ 5 Diplocampa assimile     Bembidion assimile     Insecta      Coleoptera 
+ 6 Tetartopeus terminatum  Tetartopeus terminatus Insecta      Coleoptera 
+ 7 Pirata latitans         Piratula latitans      Arachnida    Araneae    
+ 8 Cantharis fulvicollis   Cantharis              Insecta      Coleoptera 
+ 9 Apis mellifera L.       Apis mellifera         Insecta      Hymenoptera
+10 Trachelipus rathkei     Trachelipus rathkii    Malacostraca Isopoda    
+# … with 893 more rows
+```
+
 I also write the backbone to a PG database. First, create the database and add the postgis extension:
 
 ```bash
