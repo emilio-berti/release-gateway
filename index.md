@@ -3,10 +3,9 @@ title: Release new version of GATEWAy
 date: April 2022
 ---
 
-
 This repo contains the code to produce the new version (2.0) of the GlobAL daTabasE of traits and food Web Architecture (GATEWAy) database. The original data processed here can be downloaded from: https://idata.idiv.de/ddm/Data/ShowData/283?version=3.
 
-## Download database
+# Download database
 
 You can do manually, but in bash the snippet below downloads the zipped folder into `data/raw` and extracts it there.
 
@@ -17,7 +16,7 @@ curl -o data/raw/gateway.zip https://idata.idiv.de/ddm/Data/DownloadZip/283?vers
 unzip -d data/raw data/raw/gateway.zip
 ```
 
-## Remove quotation marks
+# Remove quotation marks
 
 I replace `,` that happears betwenn quotations with `;`. I use _awk_, because it's good:
 
@@ -32,7 +31,15 @@ replace-comas() {
 replace-comas tests/replace-quoted-comas.csv tests/replaced-quoted-comas.csv
 # install colordiff or just use diff - I don't have good eyes, so I need colors.
 colordiff -y tests/replace-quoted-comas.csv tests/replaced-quoted-comas.csv
+```
 
+```
+I don't want comas within quotations, 0                         I don't want comas within quotations, 0
+this line should not change, 1                                  this line should not change, 1
+"this line, instead, should change", 2                        | this line; instead; should change, 2
+```
+
+```bash
 mkdir data/interim
 mkdir data/final
 
@@ -177,12 +184,38 @@ n.raw <- backbone %>% pull(Species) %>% unique() %>% length()
 backbone <- backbone %>% mutate(GBIF = modify2(Species, GBIF, \(x, y) return (ifelse(is.na(y), x, y))))
 n.total <- backbone %>% pull(GBIF) %>% unique() %>% length()
 
-n.harmonized / n.raw # = 0.887
-n.total / n.raw # = 0.966
+n.harmonized / n.raw
+```
 
-length(setdiff(backbone$GBIF, backbone$Species)) # = 715
-length(setdiff(backbone$Species, backbone$GBIF)) # = 880
+```
+0.887
+```
 
+```r
+n.total / n.raw
+```
+
+```
+0.966
+```
+
+```r
+length(setdiff(backbone$GBIF, backbone$Species))
+```
+
+```
+715
+```
+
+```r
+length(setdiff(backbone$Species, backbone$GBIF))
+```
+
+```
+880
+```
+
+```r
 backbone %>% filter(Species != GBIF)
 ```
 
@@ -262,7 +295,7 @@ curs.fetchall()
 backbone['Species'].size
 ```
 
-## Assign missing movement types
+# Assign missing movement types
 
 ```r
 library(readr)
